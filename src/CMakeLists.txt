@@ -1,5 +1,15 @@
 target_sources(map PRIVATE
     Main.cpp
+    View.h
+    View.cpp
+    ControlPanel.h
+    ControlPanel.cpp
     MarbleMap.h
     MarbleMap.cpp
+    PolygonMark.h
+    PolygonMark.cpp
+    IndepVar.h
+    IndepVar.cpp
+    DataBase.h
+    DataBase.cpp
     )

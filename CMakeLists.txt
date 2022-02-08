@@ -17,6 +17,9 @@ add_subdirectory(third-party/sqlite3)
 
 find_package(Marble REQUIRED)
 find_package(Qt5 COMPONENTS Network REQUIRED)
+target_link_libraries(map PRIVATE ${CMAKE_DL_LIBS})
+
 target_link_libraries(map PRIVATE voronoi)
 target_link_libraries(map PRIVATE Marble)
+target_link_libraries(map PRIVATE pthread)
 target_link_libraries(map PRIVATE sqlite3)
