@@ -23,22 +23,25 @@ private:
   Database *DB = nullptr;
   SQLiteTable *table = nullptr;
   MarbleMap *map = nullptr;
+  std::map<unsigned int, unsigned int> cellNumToId;
 
 public:
   void SetControlPanel(ControlPanel *_cPanel) { cPanel = _cPanel; }
   void SetDB(Database *_DB) { DB = _DB; }
   void SetTable(SQLiteTable *_table) { table = _table; };
   void SetMap(MarbleMap *_map) { map = _map; };
+  void SetCellNumLookUp(const std::map<unsigned int, unsigned int> &lookup){cellNumToId=lookup;}
 
   ControlPanel *GetControlPanel() const { return cPanel; };
   Database *GetDB() const { return DB; };
   SQLiteTable *GetTable() const { return table; };
   MarbleMap *GetMap() const { return map; };
+  std::map<unsigned int, unsigned int> &GetCellIdLookup(){return cellNumToId;};
 };
 
 MapContext mainContext;
 View::View(QApplication *app) {
-  mainContext.SetControlPanel(new ControlPanel());
+  mainContext.SetControlPanel(new ControlPanel(this));
   mainContext.SetDB(new Database());
   mainContext.SetMap(new MarbleMap());
   QWidget *widget = new QWidget();
@@ -46,10 +49,10 @@ View::View(QApplication *app) {
   vLayout->insertWidget(0, mainContext.GetControlPanel());
   vLayout->insertWidget(1, mainContext.GetMap(), 1);
   vLayout->addStretch();
-  std::map<unsigned int, unsigned int> cellNumToId;
+  std::map<unsigned int, unsigned int> &cellNumToId=mainContext.GetCellIdLookup();
 
   VorDiagram *vor = new VorDiagram();
-  ReadDB("map.db");
+  ReadDB("map2.db");
   mainContext.GetDB()->ProcessCells();
   std::vector<Cell *> DBCells = mainContext.GetDB()->GetCells();
   std::vector<std::pair<double, double>> latlonPairs;
@@ -60,11 +63,32 @@ View::View(QApplication *app) {
   std::cout << "There are " << DBCells.size() << " cells\n";
   vor->Generate();
   // Create a Marble QWidget without a parent
-
   size_t count = vor->GetPolygons().size();
   for (const Polygon *poly : vor->GetPolygons()) {
+
     unsigned int id = mainContext.GetMap()->AddPolygonMark(*poly);
+    PolygonMark * mark=mainContext.GetMap()->GetPolygonMark(id);
+    //mark->SetCoordinate(poly->GetCenter().x,poly->GetCenter().y);
+
+    bool matchFound = false;
+    unsigned int cellNum;
+    for (size_t i = 0; i < DBCells.size(); i++) {
+      double polyLat = poly->GetCenter().x;
+      double polyLon = poly->GetCenter().y;
+      Cell *currCell = DBCells[i];
+      if (polyLat == currCell->lat && polyLon == currCell->lon) {
+        //cellNumToId[currCell->num] = id;
+        std::string name=std::to_string(i);
+        //mark->SetName(name);
+
+        matchFound = true;
+      }
+    }
+    if (!matchFound) {
+      std::cout << "Warning no match for polygon found\n";
+    }
   }
+  SimulationChanged(mainContext.GetControlPanel());
   mainContext.GetMap()->Finalize();
   mainContext.GetMap()->resize(400, 300);
   mainContext.GetMap()->show();
@@ -89,6 +113,21 @@ void View::ReadDB(const std::string &fileName) {
     var->SetOptions(options);
     cPanel->AddIndepVar(var);
   }
-  std::vector<std::string> timeOptions = mainContext.GetDB()->GetTimeSteps();
-  cPanel->SetTimeOptions(timeOptions);
+}
+
+void View::SimulationChanged(ControlPanel *cPanel) {
+  Database *db = mainContext.GetDB();
+  std::vector<IndepVar *> vars = cPanel->GetVars();
+
+  for (const IndepVar *var : vars) {
+    db->AddWhereClause(var->GetName(), var->GetSelection());
+  }
+  db->UpdateSimulation();
+  cPanel->SetTimeOptions(db->GetTimeSteps());
+  cPanel->SetResponses(db->GetRespScoreAsset());
+}
+
+void View::UpdateMap() {
+  ControlPanel *cPanel = mainContext.GetControlPanel();
+  MarbleMap *map = mainContext.GetMap();
 }

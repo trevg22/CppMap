@@ -13,6 +13,8 @@ private:
 public:
     IndepVar(const std::string &name);
     void SetOptions(const std::vector<std::string> &labels);
-    QComboBox *GetDrop();
-    QVBoxLayout * GetVLayout();
+    std::string GetName() const;
+    std::string GetSelection() const;
+    QComboBox *GetDrop()const ;
+    QVBoxLayout * GetVLayout()const;
 };

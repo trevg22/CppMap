@@ -6,22 +6,25 @@
 #include <map>
 #include <string>
 #include <vector>
+#include"View.h"
 class ControlPanel : public QWidget {
 private:
+  View *view=nullptr;
   QHBoxLayout *hLayout = nullptr;
   QComboBox *timeSpin = nullptr;
-  QComboBox *tgtDrop = nullptr;
+  QComboBox *assetDrop = nullptr;
   QComboBox *respDrop = nullptr;
   // Valid responses for a target key
-  std::map<std::string, std::vector<std::string>> responsesByTgt;
+  std::map<std::string, std::vector<std::string>> assetsByResponse;
   std::vector<IndepVar *> vars;
+  void ResponseSelected(const std::string &response);
+  void SimulationChanged();
 
 public:
-  ControlPanel();
+  ControlPanel(View *_view);
   void AddIndepVar(IndepVar *var);
-  void ResponseSelected();
   void SetTimeOptions(const std::vector<std::string> &timeOptions);
   void SetTimeParams(double start, double stop, unsigned int numSteps);
-  void SetResponses(
-      const std::map<std::string, std::vector<std::string>> &_responsesByTgt);
+  void SetResponses(const std::vector<std::string> &respScoreAssets);
+  std::vector<IndepVar*> GetVars();
 };

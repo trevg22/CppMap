@@ -7,5 +7,6 @@ private:
 public:
   View(QApplication *app);
   void ReadDB(const std::string &fileName);
-  void UpateMap(ControlPanel *cPanel);
+  void UpdateMap();
+  void SimulationChanged(ControlPanel *cPanel);
 };

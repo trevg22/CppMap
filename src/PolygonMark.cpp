@@ -20,3 +20,8 @@ void PolygonMark::SetCoordinate(double lat, double lon) {
   mark->setCoordinate(lat, lon, 0, Marble::GeoDataCoordinates::Degree);
 }
 Marble::GeoDataPlacemark *PolygonMark::GetPlaceMark() { return mark; }
+
+void PolygonMark::SetName(const std::string &name)
+{
+    mark->setName(QString::fromStdString(name));
+}

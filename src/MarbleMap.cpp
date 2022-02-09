@@ -11,7 +11,7 @@ MarbleMap::MarbleMap() {
   // this->setShowClouds(true);
   // this->setShowBorders(true);
   this->setShowGrid(false);
-  doc=new Marble::GeoDataDocument();
+  doc = new Marble::GeoDataDocument();
   // Hide the FloatItems: Compass and StatusBar
 }
 
@@ -22,18 +22,19 @@ unsigned int MarbleMap::AddPolygonMark(const Polygon &poly) {
                                         Marble::GeoDataCoordinates::Degree);
   }
   PolygonMark *mark = new PolygonMark();
-  const coord &center=poly.GetCenter();
-  mark->SetCoordinate(center.y,center.x);
+  const coord &center = poly.GetCenter();
+  mark->SetCoordinate(center.x, center.y);
+  mark->SetName("blah");
   mark->SetGeometry(ring);
-  //mark->GetPlaceMark()->setStyle(style);
+  // mark->GetPlaceMark()->setStyle(style);
   polyMarks.insert(
       std::map<unsigned int, PolygonMark *>::value_type(renderCount, mark));
   doc->append(mark->GetPlaceMark());
   renderCount++;
   return renderCount - 1;
 }
-
-void MarbleMap::Finalize()
-{
-    this->model()->treeModel()->addDocument(doc);
+PolygonMark *MarbleMap::GetPolygonMark(unsigned int id) {
+  return polyMarks.at(id);
 }
+
+void MarbleMap::Finalize() { this->model()->treeModel()->addDocument(doc); }

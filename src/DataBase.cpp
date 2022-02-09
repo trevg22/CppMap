@@ -1,5 +1,6 @@
 #include "DataBase.h"
-
+#include <iostream>
+Database::Database() { currSim = new Simulation(); }
 void Database::ProcessCells() {
   CellTable table;
   table.Init();
@@ -38,6 +39,53 @@ void Database::ProcessCells() {
   // extract this to function
   sqlite3_finalize(stmt);
 }
+
+void Database::UpdateSimulation() {
+  currSim->Clear();
+
+  SQLiteTable mavData;
+  mavData.SetName(SQLKey::dataTable);
+  UpdateTableSchema(mavData);
+  std::vector<std::string> columnNames = {SQLKey::cell, SQLKey::reponse,
+                                          SQLKey::time, SQLKey::value};
+  timeSteps = GetDistinctColumnValues(mavData, SQLKey::time);
+
+  respScoreAssets = GetDistinctColumnValues(mavData, SQLKey::reponse);
+
+  std::string SQLCMD = BuildSelect(mavData, columnNames) + BuildWhere(mavData);
+  SQLCMD += ";";
+  sqlite3_stmt *stmt = nullptr;
+  int rc = sqlite3_prepare_v2(db, SQLCMD.c_str(), -1, &stmt, nullptr);
+  if (rc != SQLITE_OK) {
+    printf("error:%s ", sqlite3_errmsg(db));
+  }
+
+  size_t cellCol = mavData.GetColumNum(SQLKey::cell);
+  size_t respCol = mavData.GetColumNum(SQLKey::reponse);
+  size_t timeCol = mavData.GetColumNum(SQLKey::time);
+  size_t valCol = mavData.GetColumNum(SQLKey::value);
+  int res = SQLITE_OK;
+  while (res != SQLITE_DONE) {
+    res = sqlite3_step(stmt);
+    switch (res) {
+    case SQLITE_ROW: {
+      int cell = sqlite3_column_int(stmt, cellCol);
+      std::string response(
+          reinterpret_cast<const char *>(sqlite3_column_text(stmt, respCol)));
+
+      const unsigned char* timeChar=sqlite3_column_text(stmt,timeCol);
+      double time=sqlite3_column_double(stmt,timeCol);
+      double val = sqlite3_column_double(stmt, valCol);
+      currSim->AddElement(response, time, cell, val);
+      break;
+    }
+    case SQLITE_DONE: {
+      break;
+    }
+    }
+  }
+  // extract this to function
+}
 std::vector<Cell *> Database::GetCells() { return cells; }
 
 std::map<std::string, std::vector<std::string>> Database::GetIndepVarOptions() {
@@ -56,16 +104,8 @@ std::map<std::string, std::vector<std::string>> Database::GetIndepVarOptions() {
   }
   return options;
 }
-std::vector<std::string> Database::GetTimeSteps() {
-  SQLiteTable mavData;
-  mavData.SetName(SQLKey::dataTable);
-  UpdateTableSchema(mavData);
-  return GetDistinctColumnValues(mavData, SQLKey::time);
-}
+std::vector<std::string> Database::GetTimeSteps() { return timeSteps; }
 
 std::vector<std::string> Database::GetRespScoreAsset() {
-  SQLiteTable mavData;
-  mavData.SetName(SQLKey::dataTable);
-  UpdateTableSchema(mavData);
-  return GetDistinctColumnValues(mavData, SQLKey::reponse);
+  return respScoreAssets;
 }
