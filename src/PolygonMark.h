@@ -6,7 +6,8 @@
 #include <marble/GeoDataStyle.h>
 class PolygonMark {
 private:
-  Marble::GeoDataPlacemark *mark = nullptr;
+  Marble::GeoDataPlacemark *polyMark = nullptr;
+  Marble::GeoDataPlacemark *centerMark = nullptr;
   Marble::GeoDataLinearRing *poly = nullptr;
   QSharedPointer<Marble::GeoDataStyle> *style = nullptr;
   Marble::GeoDataLineStyle *lineStyle = nullptr;
@@ -19,5 +20,10 @@ public:
   void SetName(const std::string &name);
   void SetLineColor(const QColor &color);
   void SetPolygonColor(const QColor &color);
+  void SetCenterMark(Marble::GeoDataPlacemark *_centerMark);
   Marble::GeoDataPlacemark *GetPlaceMark();
+  Marble::GeoDataPolyStyle *GetPolyStyle();
+  Marble::GeoDataLineStyle *GetLineStyle();
+  QSharedPointer<Marble::GeoDataStyle> *GetStyle();
+  Marble::GeoDataPlacemark *GetCenterMark();
 };

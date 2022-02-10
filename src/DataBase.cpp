@@ -69,13 +69,11 @@ void Database::UpdateSimulation() {
     res = sqlite3_step(stmt);
     switch (res) {
     case SQLITE_ROW: {
-      int cell = sqlite3_column_int(stmt, cellCol);
+      int cell = sqlite3_column_int(stmt, 0);
       std::string response(
-          reinterpret_cast<const char *>(sqlite3_column_text(stmt, respCol)));
-
-      const unsigned char* timeChar=sqlite3_column_text(stmt,timeCol);
-      double time=sqlite3_column_double(stmt,timeCol);
-      double val = sqlite3_column_double(stmt, valCol);
+          reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1)));
+      double time=sqlite3_column_double(stmt,2);
+      double val = sqlite3_column_double(stmt, 3);
       currSim->AddElement(response, time, cell, val);
       break;
     }
@@ -108,4 +106,8 @@ std::vector<std::string> Database::GetTimeSteps() { return timeSteps; }
 
 std::vector<std::string> Database::GetRespScoreAsset() {
   return respScoreAssets;
+}
+std::map<std::size_t,double>& Database::GetCellSlice(const std::string &response,double time)
+{
+    return currSim->GetCellSlice(response,time);
 }

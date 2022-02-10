@@ -1,9 +1,8 @@
 #include "ControlPanel.h"
 #include <iostream>
 
-
 ControlPanel::ControlPanel(View *_view) {
-  view=_view;
+  view = _view;
   hLayout = new QHBoxLayout(this);
   // timeSpin = new QDoubleSpinBox(this);
   timeSpin = new QComboBox();
@@ -26,12 +25,17 @@ ControlPanel::ControlPanel(View *_view) {
   hLayout->insertLayout(0, respLayout);
   hLayout->insertLayout(0, timeLayout);
   this->setLayout(hLayout);
+}
 
+void ControlPanel::ConnectSignals() {
   connect(
       respDrop, &QComboBox::currentTextChanged, this,
       [this](const QString &text) { ResponseSelected(text.toStdString()); });
+  connect(timeSpin, &QComboBox::currentTextChanged, this,
+          [this]() { this->view->UpdateMap(); });
+  connect(assetDrop, &QComboBox::currentTextChanged, this,
+          [this]() { this->view->UpdateMap(); });
 }
-
 void ControlPanel::ResponseSelected(const std::string &response) {
   std::vector<std::string> &assetVec = assetsByResponse[response];
   QList<QString> assetList;
@@ -48,7 +52,6 @@ void ControlPanel::AddIndepVar(IndepVar *var) {
   connect(var->GetDrop(), &QComboBox::currentTextChanged, this,
           [this]() { view->SimulationChanged(this); });
   vars.push_back(var);
-
 }
 
 void ControlPanel::SetTimeOptions(const std::vector<std::string> &timeOptions) {
@@ -66,12 +69,13 @@ void ControlPanel::SetTimeParams(double start, double stop,
   timeSpin->setSingleStep((stop - start) / numSteps);
   */
 }
-void ControlPanel::SetResponses(const std::vector<std::string> &respScoreAssets) {
-for (const std::string &str : respScoreAssets) {
+void ControlPanel::SetResponses(
+    const std::vector<std::string> &respScoreAssets) {
+  for (const std::string &str : respScoreAssets) {
     size_t underPos = str.find("_");
     if (underPos != std::string::npos) {
       std::string response = str.substr(0, underPos);
-      std::string asset = str.substr(underPos+1, str.length());
+      std::string asset = str.substr(underPos + 1, str.length());
       assetsByResponse[response].push_back(asset);
     }
   }
@@ -91,10 +95,19 @@ for (const std::string &str : respScoreAssets) {
                  [](std::string str) { return QString::fromStdString(str); });
 
   respDrop->addItems(respList);
+  ResponseSelected(respDrop->currentText().toStdString());
 }
 
-std::vector<IndepVar*> ControlPanel::GetVars()
-{
-return vars;
+std::vector<IndepVar *> ControlPanel::GetVars() { return vars; }
+
+std::string ControlPanel::GetCurrentAsset() {
+  return assetDrop->currentText().toStdString();
 }
 
+std::string ControlPanel::GetCurrentResponse() {
+  return respDrop->currentText().toStdString();
+}
+
+double ControlPanel::GetCurrentTime() {
+  return std::stod(timeSpin->currentText().toStdString());
+}

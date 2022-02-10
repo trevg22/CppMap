@@ -22,9 +22,13 @@ private:
 
 public:
   ControlPanel(View *_view);
+  void ConnectSignals();
   void AddIndepVar(IndepVar *var);
   void SetTimeOptions(const std::vector<std::string> &timeOptions);
   void SetTimeParams(double start, double stop, unsigned int numSteps);
   void SetResponses(const std::vector<std::string> &respScoreAssets);
   std::vector<IndepVar*> GetVars();
+  std::string GetCurrentAsset();
+  std::string GetCurrentResponse();
+  double GetCurrentTime();
 };

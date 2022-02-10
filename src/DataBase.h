@@ -21,6 +21,10 @@ public:
                     size_t cell, double value) {
     return data[response][time][cell];
   }
+  std::map<std::size_t,double>&GetCellSlice(const std::string &response,double time)
+  {
+      return data[response][time];
+  }
   void Clear()
   {
       data.clear();
@@ -68,4 +72,5 @@ public:
   std::map<std::string, std::vector<std::string>> GetIndepVarOptions();
   std::vector<std::string> GetTimeSteps();
   std::vector<std::string> GetRespScoreAsset();
+std::map<std::size_t,double>&GetCellSlice(const std::string &response,double time);
 };

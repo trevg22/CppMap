@@ -16,5 +16,7 @@ class MarbleMap : public Marble::MarbleWidget {
     MarbleMap();
     unsigned int AddPolygonMark(const Polygon &poly);
     PolygonMark *GetPolygonMark(unsigned int id);
+    void SetPolygonColor(unsigned int id, const QColor &color);
+    void SetPolygonColor(const QColor &color);
     void Finalize();
 };
