@@ -16,7 +16,13 @@ void Settings::ReadSettings() {
     Marble::MarbleDirs::setMarbleDataPath(QString::fromStdString(dataPath));
   }
   lua_close(state);
-
+  
+  localPath=Marble::MarbleDirs::localPath().toStdString();
+  systemPath=Marble::MarbleDirs::systemPath().toStdString();
 }
 
 const std::string &Settings::GetDataPath() const { return dataPath; }
+
+const std::string &Settings::GetLocalPath() const{return localPath;}
+
+const std::string &Settings::GetSystemPath() const{return systemPath;}

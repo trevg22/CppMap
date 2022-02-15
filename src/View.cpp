@@ -3,6 +3,7 @@
 #include "DataBase.h"
 #include "IndepVar.h"
 #include "MarbleMap.h"
+#include "Settings.h"
 #include "VorDiagram.h"
 #include <QtWidgets/qboxlayout.h>
 #include <QtWidgets/qpushbutton.h>
@@ -15,8 +16,6 @@
 #include <marble/GeoDataStyle.h>
 #include <marble/GeoDataTreeModel.h>
 #include <marble/MarbleModel.h>
-#include"Settings.h"
-
 // Grouping of object associations
 class MapContext {
 private:
@@ -46,9 +45,11 @@ public:
 
 MapContext mainContext;
 View::View(QApplication *app) {
-  Settings *settings =new Settings();
+  Settings *settings = new Settings();
   settings->ReadSettings();
-  std::cout<<"Settings data path "<<settings->GetDataPath()<<"\n";
+  std::cout << "System Path " << settings->GetSystemPath() << "\n";
+  std::cout << "Local Path " << settings->GetLocalPath() << "\n";
+  std::cout << "Data Path " << settings->GetDataPath() << "\n";
   mainContext.SetControlPanel(new ControlPanel(this));
   mainContext.SetDB(new Database());
   mainContext.SetMap(new MarbleMap());
@@ -86,7 +87,7 @@ View::View(QApplication *app) {
       double polyLon = poly->GetCenter().y;
       Cell *currCell = DBCells[i];
       if (polyLat == currCell->lat && polyLon == currCell->lon) {
-         cellNumToId[currCell->num] = id;
+        cellNumToId[currCell->num] = id;
         std::string name = std::to_string(i);
         mark->GetCenterMark()->setName(QString::fromStdString(name));
 
@@ -139,15 +140,15 @@ void View::SimulationChanged(ControlPanel *cPanel) {
 }
 
 void View::UpdateMap() {
-    std::cout<<"Map updated";
+  std::cout << "Map updated";
   ControlPanel *cPanel = mainContext.GetControlPanel();
   Database *db = mainContext.GetDB();
   MarbleMap *map = mainContext.GetMap();
-  double alpha=125;
-  map->SetPolygonColor(QColor(255,255,255,alpha));
+  double alpha = 125;
+  map->SetPolygonColor(QColor(255, 255, 255, alpha));
   const std::string respScoreAsset =
       cPanel->GetCurrentResponse() + "_" + cPanel->GetCurrentAsset();
-  std::cout<<respScoreAsset<<"\n";
+  std::cout << respScoreAsset << "\n";
   double time = cPanel->GetCurrentTime();
   const std::map<size_t, double> &cellSlice =
       db->GetCellSlice(respScoreAsset, time);
@@ -164,9 +165,10 @@ void View::UpdateMap() {
   for (const std::pair<size_t, double> &cellData : cellSlice) {
     size_t cell = cellData.first;
     double data = cellData.second;
-    unsigned int id=cellNumToId[cell];
-    //std::cout<<"Color for cell "<<cell<< "set to "<<255*data/max<<"for id "<<id<<" \n";
-    QColor color(255*data/max,0,0,255);
-    map->SetPolygonColor(id,color);
+    unsigned int id = cellNumToId[cell];
+    // std::cout<<"Color for cell "<<cell<< "set to "<<255*data/max<<"for id
+    // "<<id<<" \n";
+    QColor color(255 * data / max, 0, 0, 255);
+    map->SetPolygonColor(id, color);
   }
 }
