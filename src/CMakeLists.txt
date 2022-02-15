@@ -12,4 +12,6 @@ target_sources(map PRIVATE
     IndepVar.cpp
     DataBase.h
     DataBase.cpp
+    Settings.h
+    Settings.cpp
     )

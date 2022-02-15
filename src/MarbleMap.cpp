@@ -59,7 +59,7 @@ void MarbleMap::SetPolygonColor(unsigned int id, const QColor &color) {
 void MarbleMap::SetPolygonColor(const QColor &color) {
 
   for (const std::pair<unsigned int, PolygonMark *> ele : polyMarks) {
-      std::cout<<"\n"<<"Setting color for id "<<ele.first<<"\n";
+      //std::cout<<"\n"<<"Setting color for id "<<ele.first<<"\n";
     PolygonMark *mark = ele.second;
     mark->SetPolygonColor(color);
     this->model()->treeModel()->updateFeature(mark->GetPlaceMark());

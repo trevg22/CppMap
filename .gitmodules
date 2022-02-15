@@ -1,0 +1,9 @@
+[submodule "third-party/SQLite3"]
+	path = third-party/SQLite3
+	url = git@github.com:trevg22/SQLite3.git
+[submodule "third-party/voronoi"]
+	path = third-party/voronoi
+	url = git@github.com:trevg22/voronoi.git
+[submodule "third-party/lua"]
+	path = third-party/lua
+	url = git@github.com:trevg22/lua.git

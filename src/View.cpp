@@ -15,6 +15,7 @@
 #include <marble/GeoDataStyle.h>
 #include <marble/GeoDataTreeModel.h>
 #include <marble/MarbleModel.h>
+#include"Settings.h"
 
 // Grouping of object associations
 class MapContext {
@@ -45,6 +46,9 @@ public:
 
 MapContext mainContext;
 View::View(QApplication *app) {
+  Settings *settings =new Settings();
+  settings->ReadSettings();
+  std::cout<<"Settings data path "<<settings->GetDataPath()<<"\n";
   mainContext.SetControlPanel(new ControlPanel(this));
   mainContext.SetDB(new Database());
   mainContext.SetMap(new MarbleMap());
@@ -161,7 +165,7 @@ void View::UpdateMap() {
     size_t cell = cellData.first;
     double data = cellData.second;
     unsigned int id=cellNumToId[cell];
-    std::cout<<"Color for cell "<<cell<< "set to "<<255*data/max<<"for id "<<id<<" \n";
+    //std::cout<<"Color for cell "<<cell<< "set to "<<255*data/max<<"for id "<<id<<" \n";
     QColor color(255*data/max,0,0,255);
     map->SetPolygonColor(id,color);
   }

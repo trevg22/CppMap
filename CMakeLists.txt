@@ -13,12 +13,15 @@ add_executable(map)
 
 add_subdirectory(src)
 add_subdirectory(third-party/voronoi)
-add_subdirectory(third-party/sqlite3)
+add_subdirectory(third-party/SQLite3)
+add_subdirectory(third-party/lua)
 
 find_package(Marble REQUIRED)
 find_package(Qt5 COMPONENTS Network REQUIRED)
+
 target_link_libraries(map PRIVATE ${CMAKE_DL_LIBS})
 
+target_link_libraries(map PRIVATE lua)
 target_link_libraries(map PRIVATE voronoi)
 target_link_libraries(map PRIVATE Marble)
 target_link_libraries(map PRIVATE pthread)
