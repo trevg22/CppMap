@@ -18,10 +18,17 @@ add_subdirectory(third-party/lua)
 
 find_package(Marble REQUIRED)
 find_package(Qt5 COMPONENTS Network REQUIRED)
+find_package(Threads REQUIRED)
 
+if (NOT MSVC)
+    target_link_libraries(map PRIVATE pthread)
+else()
+    target_link_libraries(map PRIVATE Threads:Threads)
+endif()
 target_link_libraries(map PRIVATE ${CMAKE_DL_LIBS})
 
 target_link_libraries(map PRIVATE lua)
 target_link_libraries(map PRIVATE voronoi)
 target_link_libraries(map PRIVATE Marble)
 target_link_libraries(map PRIVATE sqlite3)
+
