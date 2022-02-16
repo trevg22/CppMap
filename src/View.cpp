@@ -16,6 +16,7 @@
 #include <marble/GeoDataStyle.h>
 #include <marble/GeoDataTreeModel.h>
 #include <marble/MarbleModel.h>
+#include"Legend.h"
 // Grouping of object associations
 class MapContext {
 private:
@@ -55,8 +56,13 @@ View::View(QApplication *app) {
   mainContext.SetMap(new MarbleMap());
   QWidget *widget = new QWidget();
   QVBoxLayout *vLayout = new QVBoxLayout(widget);
-  vLayout->insertWidget(0, mainContext.GetControlPanel());
-  vLayout->insertWidget(1, mainContext.GetMap(), 1);
+
+  //Legend* leg=new Legend(mainContext.GetMap());
+Legend* leg=new Legend(mainContext.GetMap());
+  leg->AddEntry(2.5,QColor(255,0,0,200));
+  vLayout->insertWidget(1, mainContext.GetControlPanel());
+  vLayout->insertWidget(2, mainContext.GetMap(), 1);
+  //vLayout->insertWidget(0,leg);
   vLayout->addStretch();
   std::map<unsigned int, unsigned int> &cellNumToId =
       mainContext.GetCellIdLookup();
@@ -105,6 +111,7 @@ View::View(QApplication *app) {
   mainContext.GetMap()->resize(400, 300);
   mainContext.GetMap()->show();
   widget->show();
+  leg->show();
 }
 
 // This needs most optimization

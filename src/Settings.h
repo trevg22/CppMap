@@ -9,7 +9,7 @@ private:
 public:
   Settings();
   void ReadSettings();
-  const std::string &GetDataPath() const;
-  const std::string &GetLocalPath() const;
-  const std::string &GetSystemPath() const;
+  std::string GetDataPath() const;
+  std::string GetLocalPath() const;
+  std::string GetSystemPath() const;
 };

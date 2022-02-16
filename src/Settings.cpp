@@ -21,8 +21,6 @@ void Settings::ReadSettings() {
   systemPath=Marble::MarbleDirs::systemPath().toStdString();
 }
 
-const std::string &Settings::GetDataPath() const { return dataPath; }
-
-const std::string &Settings::GetLocalPath() const{return localPath;}
-
-const std::string &Settings::GetSystemPath() const{return systemPath;}
+std::string Settings::GetDataPath() const { return Marble::MarbleDirs::marbleDataPath().toStdString(); }
+std::string Settings::GetLocalPath() const{return Marble::MarbleDirs::localPath().toStdString();}
+std::string Settings::GetSystemPath() const{return Marble::MarbleDirs::systemPath().toStdString();}

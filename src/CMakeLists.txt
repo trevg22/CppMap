@@ -14,4 +14,6 @@ target_sources(map PRIVATE
     DataBase.cpp
     Settings.h
     Settings.cpp
+    Legend.h
+    Legend.cpp
     )
