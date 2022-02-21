@@ -61,7 +61,7 @@ class Database : public SQLiteDB {
 private:
   std::vector<Cell *> cells;
   Simulation *currSim = nullptr;
-  std::vector<std::string> timeSteps;
+  std::vector<double> timeSteps;
   std::vector<std::string> respScoreAssets;
 
 public:
@@ -70,7 +70,8 @@ public:
   void UpdateSimulation();
   std::vector<Cell *> GetCells();
   std::map<std::string, std::vector<std::string>> GetIndepVarOptions();
-  std::vector<std::string> GetTimeSteps();
+  std::vector<std::string> GetTimeStepsStr();
+  std::vector<double> GetTimeSteps();
   std::vector<std::string> GetRespScoreAsset();
 std::map<std::size_t,double>&GetCellSlice(const std::string &response,double time);
 };

@@ -54,14 +54,8 @@ View::View(QApplication *app) {
   QWidget *widget = new QWidget();
   QVBoxLayout *vLayout = new QVBoxLayout(widget);
 
-  // Legend* leg=new Legend(mainContext.GetMap());
-  Legend *leg = new Legend(mainContext.GetMap());
-  leg->AddEntry(2.5, QColor(0, 0, 150, 200));
-  leg->AddEntry(40, QColor(200, 0, 0, 80));
-  leg->AddEntry(10, QColor(200, 0, 200, 80));
   vLayout->insertWidget(1, mainContext.GetControlPanel());
   vLayout->insertWidget(2, mainContext.GetMap(), 1);
-  // vLayout->insertWidget(0,leg);
   vLayout->addStretch();
   std::map<unsigned int, unsigned int> &cellNumToId =
       mainContext.GetCellIdLookup();
@@ -110,7 +104,6 @@ View::View(QApplication *app) {
   mainContext.GetMap()->resize(400, 300);
   mainContext.GetMap()->show();
   widget->show();
-  leg->show();
 }
 
 // This needs most optimization
@@ -140,7 +133,7 @@ void View::SimulationChanged(ControlPanel *cPanel) {
     db->AddWhereClause(var->GetName(), var->GetSelection());
   }
   db->UpdateSimulation();
-  cPanel->SetTimeOptions(db->GetTimeSteps());
+  cPanel->SetTimeOptions(db->GetTimeStepsStr());
   cPanel->SetResponses(db->GetRespScoreAsset());
 }
 
@@ -150,7 +143,7 @@ void View::UpdateMap() {
   Database *db = mainContext.GetDB();
   MarbleMap *map = mainContext.GetMap();
   double alpha = 125;
-  map->SetPolygonColor(QColor(255, 255, 255, alpha));
+  // map->SetPolygonColor(QColor(255, 255, 255, alpha));
   const std::string respScoreAsset =
       cPanel->GetCurrentResponse() + "_" + cPanel->GetCurrentAsset();
   std::cout << respScoreAsset << "\n";
@@ -159,10 +152,14 @@ void View::UpdateMap() {
       db->GetCellSlice(respScoreAsset, time);
 
   double max = 0;
-  for (const std::pair<size_t, double> &cellData : cellSlice) {
-    double data = cellData.second;
-    if (data > max) {
-      max = data;
+
+  for (const double &time : db->GetTimeSteps()) {
+      const std::map<size_t,double> &slice=db->GetCellSlice(respScoreAsset,time);
+    for (const std::pair<size_t, double> &cellData : cellSlice) {
+      double data = cellData.second;
+      if (data > max) {
+        max = data;
+      }
     }
   }
   std::map<unsigned int, unsigned int> &cellNumToId =

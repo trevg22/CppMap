@@ -48,9 +48,10 @@ void Database::UpdateSimulation() {
   UpdateTableSchema(mavData);
   std::vector<std::string> columnNames = {SQLKey::cell, SQLKey::reponse,
                                           SQLKey::time, SQLKey::value};
-  timeSteps = GetDistinctColumnValues(mavData, SQLKey::time);
+  timeSteps = GetDistinctColumnValues<double>(mavData, SQLKey::time);
 
-  respScoreAssets = GetDistinctColumnValues(mavData, SQLKey::reponse);
+  respScoreAssets =
+      GetDistinctColumnValues<std::string>(mavData, SQLKey::reponse);
 
   std::string SQLCMD = BuildSelect(mavData, columnNames) + BuildWhere(mavData);
   SQLCMD += ";";
@@ -72,7 +73,7 @@ void Database::UpdateSimulation() {
       int cell = sqlite3_column_int(stmt, 0);
       std::string response(
           reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1)));
-      double time=sqlite3_column_double(stmt,2);
+      double time = sqlite3_column_double(stmt, 2);
       double val = sqlite3_column_double(stmt, 3);
       currSim->AddElement(response, time, cell, val);
       break;
@@ -97,17 +98,25 @@ std::map<std::string, std::vector<std::string>> Database::GetIndepVarOptions() {
     const std::string colName = col.first;
     if (colName != SQLKey::time && colName != SQLKey::reponse &&
         colName != SQLKey::value && colName != SQLKey::cell) {
-      options[colName] = GetDistinctColumnValues(mavData, colName);
+      options[colName] = GetDistinctColumnValues<std::string>(mavData, colName);
     }
   }
   return options;
 }
-std::vector<std::string> Database::GetTimeSteps() { return timeSteps; }
+std::vector<double> Database::GetTimeSteps() { return timeSteps; }
+
+std::vector<std::string> Database::GetTimeStepsStr() {
+  std::vector<std::string> stepStrs;
+  std::transform(timeSteps.begin(), timeSteps.end(),
+                 std::back_inserter(stepStrs),
+                 [](double time) { return std::to_string(time); });
+  return stepStrs;
+}
 
 std::vector<std::string> Database::GetRespScoreAsset() {
   return respScoreAssets;
 }
-std::map<std::size_t,double>& Database::GetCellSlice(const std::string &response,double time)
-{
-    return currSim->GetCellSlice(response,time);
+std::map<std::size_t, double> &
+Database::GetCellSlice(const std::string &response, double time) {
+  return currSim->GetCellSlice(response, time);
 }

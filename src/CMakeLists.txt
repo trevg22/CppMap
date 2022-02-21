@@ -16,4 +16,6 @@ target_sources(map PRIVATE
     Settings.cpp
     Legend.h
     Legend.cpp
+    Gradient.h
+    Gradient.cpp
     )

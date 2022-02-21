@@ -16,32 +16,37 @@ Legend::Legend(QWidget *parent) : QWidget(parent) {
   this->show();
 }
 void Legend::AddEntry(double value, const QColor &color) {
-  currColor = color;
-  labels.push_back(std::to_string(value));
-  unsigned int rectCornerx = colStart + colOffset;
-  unsigned int rectCornery = rowStart + rowOffset * rowCount;
-  double width = 20;
-  double hieght = 20;
-
-  //label->setGeometry(QRect(rectCornerx, rectCornery, width, hieght));
-
-  QPainter painter;
+  entry *ent = new entry();
+  ent->label = new QLabel(QString::fromStdString(std::to_string(value)), this);
+  ent->color = new QColor(color);
+  entries.push_back(ent);
 }
 
+void Legend::Paint() {}
 void Legend::paintEvent(QPaintEvent *) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing);
   QPainterPath path;
-  unsigned int rectCornerx = colStart + colOffset * 2;
-  unsigned int rectCornery = rowStart;
-  double width = 20;
-  double hieght = 20;
-  path.addRoundedRect(QRectF(rectCornerx, rectCornery, width, hieght),
-                      width + 5, hieght + 5);
-  QPen pen(Qt::black, 5);
-  p.setPen(pen);
-  p.fillPath(path, currColor);
-  p.strokePath(path, pen);
-  rowCount++;
+  const double labelWidth = 30;
+  const double labelHieght = 30;
+  const double colorWidth=30;
+  const double colorHieght=30;
+  std::cout << "Painted " << entries.size() << "\n";
+  for (size_t row = 0; row < entries.size(); row++) {
+    unsigned int labelCornerx = colStart + colOffset;
+    unsigned int labelCornery = rowStart + rowOffset * row;
+    QLabel *label = entries[row]->label;
+
+    label->setGeometry(QRect(labelCornerx, labelCornery, labelWidth, labelHieght));
+    label->show();
+
+    unsigned int colorCornerx = colStart + colOffset * 2;
+    path.addRoundedRect(QRectF(colorCornerx, labelCornery, colorWidth, colorHieght),
+                        colorWidth -20 , colorHieght -20);
+    QPen pen(Qt::black, 5);
+    p.setPen(pen);
+    p.fillPath(path, *entries[row]->color);
+    p.strokePath(path, pen);
+  }
   // p.drawPath(path);
 }
