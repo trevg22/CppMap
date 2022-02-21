@@ -2,6 +2,7 @@
 #include "ControlPanel.h"
 #include "DataBase.h"
 #include "IndepVar.h"
+#include "Legend.h"
 #include "MarbleMap.h"
 #include "Settings.h"
 #include "VorDiagram.h"
@@ -16,7 +17,6 @@
 #include <marble/GeoDataStyle.h>
 #include <marble/GeoDataTreeModel.h>
 #include <marble/MarbleModel.h>
-#include"Legend.h"
 // Grouping of object associations
 class MapContext {
 private:
@@ -48,21 +48,20 @@ MapContext mainContext;
 View::View(QApplication *app) {
   Settings *settings = new Settings();
   settings->ReadSettings();
-  std::cout << "System Path " << settings->GetSystemPath() << "\n";
-  std::cout << "Local Path " << settings->GetLocalPath() << "\n";
-  std::cout << "Data Path " << settings->GetDataPath() << "\n";
   mainContext.SetControlPanel(new ControlPanel(this));
   mainContext.SetDB(new Database());
   mainContext.SetMap(new MarbleMap());
   QWidget *widget = new QWidget();
   QVBoxLayout *vLayout = new QVBoxLayout(widget);
 
-  //Legend* leg=new Legend(mainContext.GetMap());
-Legend* leg=new Legend(mainContext.GetMap());
-  leg->AddEntry(2.5,QColor(255,0,0,200));
+  // Legend* leg=new Legend(mainContext.GetMap());
+  Legend *leg = new Legend(mainContext.GetMap());
+  leg->AddEntry(2.5, QColor(0, 0, 150, 200));
+  leg->AddEntry(40, QColor(200, 0, 0, 80));
+  leg->AddEntry(10, QColor(200, 0, 200, 80));
   vLayout->insertWidget(1, mainContext.GetControlPanel());
   vLayout->insertWidget(2, mainContext.GetMap(), 1);
-  //vLayout->insertWidget(0,leg);
+  // vLayout->insertWidget(0,leg);
   vLayout->addStretch();
   std::map<unsigned int, unsigned int> &cellNumToId =
       mainContext.GetCellIdLookup();
@@ -121,7 +120,6 @@ void View::ReadDB(const std::string &fileName) {
   mainContext.GetDB()->Open();
   std::map<std::string, std::vector<std::string>> varOptions;
   varOptions = mainContext.GetDB()->GetIndepVarOptions();
-
   ControlPanel *cPanel = mainContext.GetControlPanel();
   for (const std::pair<std::string, std::vector<std::string>> &ele :
        varOptions) {
