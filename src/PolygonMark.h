@@ -1,4 +1,5 @@
 #pragma once
+#include "Polygon.h"
 #include <marble/GeoDataLineStyle.h>
 #include <marble/GeoDataLinearRing.h>
 #include <marble/GeoDataPlacemark.h>
@@ -12,13 +13,16 @@ private:
   QSharedPointer<Marble::GeoDataStyle> *style = nullptr;
   Marble::GeoDataLineStyle *lineStyle = nullptr;
   Marble::GeoDataPolyStyle *polyStyle = nullptr;
+  Marble::GeoDataLinearRing *ring = nullptr;
 
 public:
   PolygonMark();
+  bool Contains(const coord &coor);
   void SetCoordinate(double lat, double on);
-  void SetGeometry(Marble::GeoDataLinearRing *ring);
+  void SetGeometry(Marble::GeoDataLinearRing *_ring);
   void SetName(const std::string &name);
   void SetLineColor(const QColor &color);
+  void SetLineWidth(double width);
   void SetPolygonColor(const QColor &color);
   void SetCenterMark(Marble::GeoDataPlacemark *_centerMark);
   Marble::GeoDataPlacemark *GetPlaceMark();

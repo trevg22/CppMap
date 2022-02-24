@@ -6,8 +6,8 @@
 #include <marble/GeoDataLinearRing.h>
 #include <marble/GeoDataPlacemark.h>
 #include <marble/MarbleWidget.h>
-#include<marble/MarbleWidgetInputHandler.h>
-#include<qobject.h>
+#include <qglobal.h>
+#include <qobject.h>
 
 class Map : public Marble::MarbleWidget {
   Q_OBJECT
@@ -15,12 +15,11 @@ private:
   std::map<unsigned int, PolygonMark *> polyMarks;
   unsigned int renderCount = 0;
   Marble::GeoDataDocument *doc = nullptr;
-  Marble::MarbleWidgetInputHandler *handler = nullptr;
-  //void notifyMouseClick(int x, int y) ;
-  // void mousePressEvent(QMouseEvent *event);
+  void MouseClicked(qreal lon, qreal lat);
+  // void notifyMouseClick(int x, int y) ;
+  //  void mousePressEvent(QMouseEvent *event);
   virtual ~Map(){};
-  // void MouseClicked(qreal lon, qreal lat, Marble::GeoDataCoordinates unit);
-  void MouseClicked();
+  // void MouseClicked();
 
 public:
   Map();
