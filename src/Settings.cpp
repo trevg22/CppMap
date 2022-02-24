@@ -19,6 +19,7 @@ void Settings::ReadSettings() {
   
   localPath=Marble::MarbleDirs::localPath().toStdString();
   systemPath=Marble::MarbleDirs::systemPath().toStdString();
+  Marble::MarbleDirs::setMarbleDataPath("C:\\Program Files (x86)\\marble\\data");
 }
 
 std::string Settings::GetDataPath() const { return Marble::MarbleDirs::marbleDataPath().toStdString(); }
