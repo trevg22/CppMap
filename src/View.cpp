@@ -1,9 +1,10 @@
 #include "View.h"
 #include "ControlPanel.h"
 #include "DataBase.h"
+#include "Gradient.h"
 #include "IndepVar.h"
 #include "Legend.h"
-#include "MarbleMap.h"
+#include "Map.h"
 #include "Settings.h"
 #include "VorDiagram.h"
 #include <QtWidgets/qboxlayout.h>
@@ -23,14 +24,16 @@ private:
   ControlPanel *cPanel = nullptr;
   Database *DB = nullptr;
   SQLiteTable *table = nullptr;
-  MarbleMap *map = nullptr;
+  Map *map = nullptr;
   std::map<unsigned int, unsigned int> cellNumToId;
+  Legend *legend = nullptr;
 
 public:
   void SetControlPanel(ControlPanel *_cPanel) { cPanel = _cPanel; }
   void SetDB(Database *_DB) { DB = _DB; }
   void SetTable(SQLiteTable *_table) { table = _table; };
-  void SetMap(MarbleMap *_map) { map = _map; };
+  void SetMap(Map *_map) { map = _map; };
+  void SetLegend(Legend *_legend) { legend = _legend; };
   void SetCellNumLookUp(const std::map<unsigned int, unsigned int> &lookup) {
     cellNumToId = lookup;
   }
@@ -38,7 +41,8 @@ public:
   ControlPanel *GetControlPanel() const { return cPanel; };
   Database *GetDB() const { return DB; };
   SQLiteTable *GetTable() const { return table; };
-  MarbleMap *GetMap() const { return map; };
+  Map *GetMap() const { return map; };
+  Legend *GetLegend() const { return legend; }
   std::map<unsigned int, unsigned int> &GetCellIdLookup() {
     return cellNumToId;
   };
@@ -50,7 +54,8 @@ View::View(QApplication *app) {
   settings->ReadSettings();
   mainContext.SetControlPanel(new ControlPanel(this));
   mainContext.SetDB(new Database());
-  mainContext.SetMap(new MarbleMap());
+  mainContext.SetMap(new Map());
+  mainContext.SetLegend(new Legend(mainContext.GetMap()));
   QWidget *widget = new QWidget();
   QVBoxLayout *vLayout = new QVBoxLayout(widget);
 
@@ -63,17 +68,33 @@ View::View(QApplication *app) {
   VorDiagram *vor = new VorDiagram();
   ReadDB("map2.db");
   mainContext.GetDB()->ProcessCells();
-  std::vector<Cell *> DBCells = mainContext.GetDB()->GetCells();
+  std::vector<Cell *> vorCells = mainContext.GetDB()->GetVorCells();
+  std::vector<Cell *> pathCells = mainContext.GetDB()->GetPathCells();
   std::vector<std::pair<double, double>> latlonPairs;
-  for (const Cell *cell : DBCells) {
+  for (const Cell *cell : vorCells) {
     latlonPairs.push_back({cell->lat, cell->lon});
   }
   vor->AddPoints(latlonPairs);
-  std::cout << "There are " << DBCells.size() << " cells\n";
   vor->Generate();
+
+  std::vector<Polygon *> polygons = vor->GetPolygons();
+  std::vector<Cell *> cells;
+  cells.insert(cells.end(),vorCells.begin(),vorCells.end());
+  cells.insert(cells.end(),pathCells.begin(),pathCells.end());
+  // Add in polygons for path cells
+  for (const Cell *cell : pathCells) {
+    const double gap = .5;
+    Polygon *poly = new Polygon();
+
+    poly->SetCenter({cell->lat,cell->lon});
+    poly->AddCoord({cell->lat + gap, cell->lon - gap});
+    poly->AddCoord({cell->lat + gap, cell->lon + gap});
+    poly->AddCoord({cell->lat - gap, cell->lon + gap});
+    poly->AddCoord({cell->lat - gap, cell->lon - gap});
+    polygons.push_back(poly);
+  }
   // Create a Marble QWidget without a parent
-  size_t count = vor->GetPolygons().size();
-  for (const Polygon *poly : vor->GetPolygons()) {
+  for (const Polygon *poly : polygons) {
 
     unsigned int id = mainContext.GetMap()->AddPolygonMark(*poly);
     PolygonMark *mark = mainContext.GetMap()->GetPolygonMark(id);
@@ -81,13 +102,13 @@ View::View(QApplication *app) {
 
     bool matchFound = false;
     unsigned int cellNum;
-    for (size_t i = 0; i < DBCells.size(); i++) {
+    for (size_t i = 0; i < cells.size(); i++) {
       double polyLat = poly->GetCenter().x;
       double polyLon = poly->GetCenter().y;
-      Cell *currCell = DBCells[i];
+      Cell *currCell = cells[i];
       if (polyLat == currCell->lat && polyLon == currCell->lon) {
         cellNumToId[currCell->num] = id;
-        std::string name = std::to_string(i);
+        std::string name = std::to_string(currCell->num);
         mark->GetCenterMark()->setName(QString::fromStdString(name));
 
         matchFound = true;
@@ -138,15 +159,14 @@ void View::SimulationChanged(ControlPanel *cPanel) {
 }
 
 void View::UpdateMap() {
-  std::cout << "Map updated";
   ControlPanel *cPanel = mainContext.GetControlPanel();
   Database *db = mainContext.GetDB();
-  MarbleMap *map = mainContext.GetMap();
+  Map *map = mainContext.GetMap();
+  map->SetPolygonColor({255, 255, 255, 0});
   double alpha = 125;
   // map->SetPolygonColor(QColor(255, 255, 255, alpha));
   const std::string respScoreAsset =
       cPanel->GetCurrentResponse() + "_" + cPanel->GetCurrentAsset();
-  std::cout << respScoreAsset << "\n";
   double time = cPanel->GetCurrentTime();
   const std::map<size_t, double> &cellSlice =
       db->GetCellSlice(respScoreAsset, time);
@@ -154,8 +174,9 @@ void View::UpdateMap() {
   double max = 0;
 
   for (const double &time : db->GetTimeSteps()) {
-      const std::map<size_t,double> &slice=db->GetCellSlice(respScoreAsset,time);
-    for (const std::pair<size_t, double> &cellData : cellSlice) {
+    const std::map<size_t, double> &slice =
+        db->GetCellSlice(respScoreAsset, time);
+    for (const std::pair<size_t, double> &cellData : slice) {
       double data = cellData.second;
       if (data > max) {
         max = data;
@@ -164,13 +185,31 @@ void View::UpdateMap() {
   }
   std::map<unsigned int, unsigned int> &cellNumToId =
       mainContext.GetCellIdLookup();
+
+  Gradient *grad = new Gradient();
+  // QColor floor(250, 36, 7, alpha);
+  QColor floor(198, 255, 221, alpha);
+  QColor mid(251, 215, 134, alpha);
+  QColor ceil(247, 121, 125, alpha);
+  grad->AddColorThresh(0, floor);
+  grad->AddColorThresh(max / 2, mid);
+  grad->AddColorThresh(max, ceil);
+  Legend *leg = mainContext.GetLegend();
+  leg->Clear();
+  size_t numLeglevels = 4;
+  for (size_t level = 0; level < numLeglevels; level++) {
+    double thresh = max * level / numLeglevels;
+    QColor color(grad->GetColor(thresh));
+    leg->AddEntry(thresh, grad->GetColor(thresh));
+  }
   for (const std::pair<size_t, double> &cellData : cellSlice) {
     size_t cell = cellData.first;
     double data = cellData.second;
     unsigned int id = cellNumToId[cell];
-    // std::cout<<"Color for cell "<<cell<< "set to "<<255*data/max<<"for id
-    // "<<id<<" \n";
-    QColor color(255 * data / max, 0, 0, 255);
-    map->SetPolygonColor(id, color);
+    if (data > 0) {
+      map->SetPolygonColor(id, grad->GetColor(data));
+    } else {
+      map->SetPolygonColor(id, {255, 255, 255});
+    }
   }
 }

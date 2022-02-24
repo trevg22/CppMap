@@ -28,8 +28,10 @@ void Database::ProcessCells() {
       cell->lon = sqlite3_column_double(stmt, 2);
       cell->isPath = sqlite3_column_int(stmt, 3);
       if (cell->isPath) {
+
+        pathCells.push_back(cell);
       } else {
-        cells.push_back(cell);
+        vorCells.push_back(cell);
       }
       break;
     case SQLITE_DONE:
@@ -85,7 +87,8 @@ void Database::UpdateSimulation() {
   }
   // extract this to function
 }
-std::vector<Cell *> Database::GetCells() { return cells; }
+std::vector<Cell *> Database::GetVorCells() { return vorCells; }
+std::vector<Cell *> Database::GetPathCells() { return pathCells; }
 
 std::map<std::string, std::vector<std::string>> Database::GetIndepVarOptions() {
   SQLiteTable mavData;

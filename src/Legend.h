@@ -4,12 +4,14 @@
 #include<QtWidgets/qboxlayout.h>
 #include <qlabel.h>
 #include<vector>
+#include<QPainterPath>
 
 class Legend:public QWidget{
     private:
     struct entry{
-        QColor* color;
-        QLabel* label;
+        QColor* color=nullptr;
+        QLabel* label=nullptr;
+        QPainterPath *path=nullptr;
     };
     QVBoxLayout *vLayout;
     const unsigned int rowStart=10;
@@ -24,4 +26,5 @@ class Legend:public QWidget{
     void AddEntry(double value,const QColor&color);
     void paintEvent(QPaintEvent *);
     void Paint();
+    void Clear();
 };

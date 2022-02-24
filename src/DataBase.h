@@ -59,7 +59,8 @@ const std::string value = "Val";
 
 class Database : public SQLiteDB {
 private:
-  std::vector<Cell *> cells;
+  std::vector<Cell *> vorCells;
+  std::vector<Cell*> pathCells;
   Simulation *currSim = nullptr;
   std::vector<double> timeSteps;
   std::vector<std::string> respScoreAssets;
@@ -68,7 +69,8 @@ public:
   Database();
   void ProcessCells();
   void UpdateSimulation();
-  std::vector<Cell *> GetCells();
+  std::vector<Cell *> GetVorCells();
+  std::vector<Cell*> GetPathCells();
   std::map<std::string, std::vector<std::string>> GetIndepVarOptions();
   std::vector<std::string> GetTimeStepsStr();
   std::vector<double> GetTimeSteps();
