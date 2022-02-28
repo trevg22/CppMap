@@ -13,36 +13,21 @@ Map::Map() {
   this->setShowGrid(false);
   doc = new Marble::GeoDataDocument();
   Marble::MarbleWidget *parent = dynamic_cast<MarbleWidget *>(this);
-  // this->connect(this,SIGNAL(mouseClickGeoPosition(qreal,qreal,Marble::GeoDataCoordinates::Unit)),this,SLOT(MouseClicked()));
-  // this->connect(nullptr,SIGNAL(Marble::mouseClickGeoPosition(qreal,qreal,Marble::GeoDataCoordinates::Unit)),this,SLOT(MouseClicked()));
-  this->connect(this, &MarbleWidget::mouseClickGeoPosition, this,
-                &Map::MouseClicked);
   this->connect(this, &MarbleWidget::mouseClickGeoPosition, this,
                 [this](qreal lon, qreal lat) { MouseClicked(lon, lat); });
 }
-// void Map::MouseClicked()
 void Map::MouseClicked(qreal lon, qreal lat) {
-  std::cout << "Mouse clicked" << lon << " " << lat << "\n";
-  double latRad = lat * 180 / std::numbers::pi;
-  double lonRad = lon * 180 / std::numbers::pi;
   for (const std::pair<unsigned int, PolygonMark *> ele : polyMarks) {
-    if (ele.second->Contains({lonRad, latRad})) {
+    if (ele.second->Contains({lon, lat})) {
       float width = ele.second->GetLineStyle()->width();
       ele.second->SetLineWidth(2 * width);
-      //std::cout << "Doubled width\n";
-      std::cout <<"Clicked on cell with name "<<ele.second->GetCenterMark()->displayName().toStdString()<<"\n";
-
+      std::cout << "Clicked on cell with name "
+                << ele.second->GetCenterMark()->displayName().toStdString()
+                << "\n";
       this->model()->treeModel()->updateFeature(ele.second->GetPlaceMark());
     }
   }
-  // double radLat=lat*180/math.pi;
 }
-
-// void Map::notifyMouseClick(int x,int y)
-// {
-//     std::cout <<"Please Work";
-// }
-// void MarbleMap::mouseClickGeoPosition
 
 unsigned int Map::AddPolygonMark(const Polygon &poly) {
   Marble::GeoDataLinearRing *ring = new Marble::GeoDataLinearRing();

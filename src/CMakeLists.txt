@@ -18,4 +18,6 @@ target_sources(map PRIVATE
     Legend.cpp
     Gradient.h
     Gradient.cpp
+    DisplayPanel.h
+    DisplayPanel.cpp
     )

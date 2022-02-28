@@ -16,7 +16,7 @@ PolygonMark::PolygonMark() {
 
 bool PolygonMark::Contains(const coord &coord) {
   return ring->contains(
-      {coord.x, coord.y, 0, Marble::GeoDataCoordinates::Degree});
+      {coord.x, coord.y, 0, Marble::GeoDataCoordinates::Radian});
 }
 void PolygonMark::SetGeometry(Marble::GeoDataLinearRing *_ring) {
   polyMark->setGeometry(_ring);
