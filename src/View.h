@@ -4,6 +4,9 @@
 class ControlPanel;
 class View {
 private:
+	QWidget* mainWindow = nullptr;
+  void CreateMenuBar(QWidget* parent);
+  std::string SelectFile();
 public:
   View(QApplication *app);
   void ReadDB(const std::string &fileName);

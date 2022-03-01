@@ -1,5 +1,6 @@
 #include "DataBase.h"
 #include <iostream>
+#include<algorithm>
 Database::Database() { currSim = new Simulation(); }
 void Database::ProcessCells() {
   CellTable table;

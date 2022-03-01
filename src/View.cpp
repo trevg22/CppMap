@@ -18,6 +18,9 @@
 #include <marble/GeoDataStyle.h>
 #include <marble/GeoDataTreeModel.h>
 #include <marble/MarbleModel.h>
+#include<QtWidgets/qfiledialog.h>
+#include<QtWidgets/qaction.h>
+#include<QtWidgets/qmenubar.h>
 // Grouping of object associations
 class MapContext {
 private:
@@ -56,18 +59,51 @@ View::View(QApplication *app) {
   mainContext.SetDB(new Database());
   mainContext.SetMap(new Map());
   mainContext.SetLegend(new Legend(mainContext.GetMap()));
-  QWidget *widget = new QWidget();
-  QVBoxLayout *vLayout = new QVBoxLayout(widget);
+  mainWindow = new QWidget();
+  QVBoxLayout *vLayout = new QVBoxLayout(mainWindow);
 
   vLayout->insertWidget(1, mainContext.GetControlPanel());
   vLayout->insertWidget(2, mainContext.GetMap(), 1);
   vLayout->addStretch();
-  std::map<unsigned int, unsigned int> &cellNumToId =
-      mainContext.GetCellIdLookup();
+  CreateMenuBar(mainWindow);
+
+  mainWindow->show();
+  }
+
+std::string View::SelectFile() {
+    QFileDialog dialog;
+    QString QfileName = QFileDialog::getOpenFileName(nullptr, "", "");
+    return QfileName.toStdString();
+}
+void View::CreateMenuBar(QWidget* parent)
+{
+        QMenuBar* menuBar = new QMenuBar(parent);
+        QMenu* fileMenu = menuBar->addMenu("File");
+
+        QAction* readAction = new QAction("Open", parent);
+        fileMenu->addAction(readAction);
+        QObject::connect(readAction, &QAction::triggered, [this]() { ReadDB(SelectFile()); });
+}
+// This needs most optimization
+void View::ReadDB(const std::string &fileName) {
+
+  mainContext.GetDB()->SetName(fileName);
+  mainContext.GetDB()->Open();
+  std::map<std::string, std::vector<std::string>> varOptions;
+  varOptions = mainContext.GetDB()->GetIndepVarOptions();
+  ControlPanel *cPanel = mainContext.GetControlPanel();
+  for (const std::pair<std::string, std::vector<std::string>> &ele :
+       varOptions) {
+
+    IndepVar *var = new IndepVar(ele.first);
+
+    std::vector<std::string> options = ele.second;
+    var->SetOptions(options);
+    cPanel->AddIndepVar(var);
+  }
 
   VorDiagram *vor = new VorDiagram();
-  ReadDB("map2.db");
-  mainContext.GetDB()->ProcessCells();
+mainContext.GetDB()->ProcessCells();
   std::vector<Cell *> vorCells = mainContext.GetDB()->GetVorCells();
   std::vector<Cell *> pathCells = mainContext.GetDB()->GetPathCells();
   std::vector<std::pair<double, double>> latlonPairs;
@@ -102,6 +138,8 @@ View::View(QApplication *app) {
 
     bool matchFound = false;
     unsigned int cellNum;
+std::map<unsigned int, unsigned int> &cellNumToId =
+      mainContext.GetCellIdLookup();
     for (size_t i = 0; i < cells.size(); i++) {
       double polyLat = poly->GetCenter().x;
       double polyLon = poly->GetCenter().y;
@@ -124,26 +162,7 @@ View::View(QApplication *app) {
   UpdateMap();
   mainContext.GetMap()->resize(400, 300);
   mainContext.GetMap()->show();
-  widget->show();
-}
 
-// This needs most optimization
-void View::ReadDB(const std::string &fileName) {
-
-  mainContext.GetDB()->SetName(fileName);
-  mainContext.GetDB()->Open();
-  std::map<std::string, std::vector<std::string>> varOptions;
-  varOptions = mainContext.GetDB()->GetIndepVarOptions();
-  ControlPanel *cPanel = mainContext.GetControlPanel();
-  for (const std::pair<std::string, std::vector<std::string>> &ele :
-       varOptions) {
-
-    IndepVar *var = new IndepVar(ele.first);
-
-    std::vector<std::string> options = ele.second;
-    var->SetOptions(options);
-    cPanel->AddIndepVar(var);
-  }
 }
 
 void View::SimulationChanged(ControlPanel *cPanel) {

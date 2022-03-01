@@ -17,7 +17,8 @@ Legend::Legend(QWidget *parent) : QWidget(parent) {
 }
 void Legend::AddEntry(double value, const QColor &color) {
   entry *ent = new entry();
-  ent->label = new QLabel(QString::fromStdString(std::to_string(value)), this);
+  std::string fmtStr = std::format("{:.2f}", value);
+  ent->label = new QLabel(QString::fromStdString(fmtStr),this);
   ent->color = new QColor(color);
   entries.push_back(ent);
 }

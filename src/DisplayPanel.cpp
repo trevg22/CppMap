@@ -17,5 +17,5 @@ void DisplayPanel::AddDataEntry(const std::string &label, double data) {
 
 void DisplayPanel::Clear() { 
     respEntries.clear();
-    rows.cle
+    //rows.cle
 }

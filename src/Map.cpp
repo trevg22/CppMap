@@ -6,6 +6,7 @@ using namespace Marble;
 
 Map::Map() {
   // Load the OpenStreetMap map
+  
   this->setMapThemeId("earth/bluemarble/bluemarble.dgml");
   this->setProjection(Marble::Mercator);
   this->setShowScaleBar(false);
