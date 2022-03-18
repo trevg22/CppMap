@@ -8,10 +8,12 @@
 #include <marble/MarbleWidget.h>
 #include <qglobal.h>
 #include <qobject.h>
+#include"View.h"
 
 class Map : public Marble::MarbleWidget {
   Q_OBJECT
 private:
+	View* view = nullptr;
   std::map<unsigned int, PolygonMark *> polyMarks;
   unsigned int renderCount = 0;
   Marble::GeoDataDocument *doc = nullptr;
@@ -22,7 +24,7 @@ private:
   // void MouseClicked();
 
 public:
-  Map();
+  Map(View * _view);
   unsigned int AddPolygonMark(const Polygon &poly);
   PolygonMark *GetPolygonMark(unsigned int id);
   void SetPolygonColor(unsigned int id, const QColor &color);

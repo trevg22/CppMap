@@ -4,7 +4,7 @@
 #include <marble/MarbleModel.h>
 using namespace Marble;
 
-Map::Map() {
+Map::Map(View *_view):view(_view) {
   // Load the OpenStreetMap map
   
   this->setMapThemeId("earth/bluemarble/bluemarble.dgml");
@@ -18,6 +18,7 @@ Map::Map() {
                 [this](qreal lon, qreal lat) { MouseClicked(lon, lat); });
 }
 void Map::MouseClicked(qreal lon, qreal lat) {
+    
   for (const std::pair<unsigned int, PolygonMark *> ele : polyMarks) {
     if (ele.second->Contains({lon, lat})) {
       float width = ele.second->GetLineStyle()->width();
@@ -26,6 +27,8 @@ void Map::MouseClicked(qreal lon, qreal lat) {
                 << ele.second->GetCenterMark()->displayName().toStdString()
                 << "\n";
       this->model()->treeModel()->updateFeature(ele.second->GetPlaceMark());
+      view->CellSelected(ele.first);
+      break;
     }
   }
 }

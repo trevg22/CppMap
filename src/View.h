@@ -12,4 +12,5 @@ public:
   void ReadDB(const std::string &fileName);
   void UpdateMap();
   void SimulationChanged(ControlPanel *cPanel);
+  void CellSelected(unsigned int id);
 };

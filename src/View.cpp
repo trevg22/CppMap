@@ -21,25 +21,32 @@
 #include<QtWidgets/qfiledialog.h>
 #include<QtWidgets/qaction.h>
 #include<QtWidgets/qmenubar.h>
+#include"DisplayPanel.h"
 // Grouping of object associations
 class MapContext {
 private:
-  ControlPanel *cPanel = nullptr;
-  Database *DB = nullptr;
-  SQLiteTable *table = nullptr;
-  Map *map = nullptr;
-  std::map<unsigned int, unsigned int> cellNumToId;
-  Legend *legend = nullptr;
+    ControlPanel* cPanel = nullptr;
+    Database* DB = nullptr;
+    SQLiteTable* table = nullptr;
+    Map* map = nullptr;
+    std::map<unsigned int, unsigned int> cellNumToId;
+    Legend* legend = nullptr;
+    DisplayPanel* dispPanel = nullptr;
 
 public:
-  void SetControlPanel(ControlPanel *_cPanel) { cPanel = _cPanel; }
-  void SetDB(Database *_DB) { DB = _DB; }
-  void SetTable(SQLiteTable *_table) { table = _table; };
-  void SetMap(Map *_map) { map = _map; };
-  void SetLegend(Legend *_legend) { legend = _legend; };
-  void SetCellNumLookUp(const std::map<unsigned int, unsigned int> &lookup) {
-    cellNumToId = lookup;
-  }
+
+    void SetControlPanel(ControlPanel* _cPanel) { cPanel = _cPanel; }
+    void SetDB(Database* _DB) { DB = _DB; }
+    void SetTable(SQLiteTable* _table) { table = _table; };
+    void SetMap(Map* _map) { map = _map; };
+    void SetLegend(Legend* _legend) { legend = _legend; };
+    void SetCellNumLookUp(const std::map<unsigned int, unsigned int>& lookup) {
+        cellNumToId = lookup;
+    }
+    void SetDisplayPanel(DisplayPanel* _disPanel)
+    {
+        dispPanel = _disPanel;
+    }
 
   ControlPanel *GetControlPanel() const { return cPanel; };
   Database *GetDB() const { return DB; };
@@ -49,6 +56,7 @@ public:
   std::map<unsigned int, unsigned int> &GetCellIdLookup() {
     return cellNumToId;
   };
+  DisplayPanel* GetDisplay() const { return dispPanel; }
 };
 
 MapContext mainContext;
@@ -57,8 +65,9 @@ View::View(QApplication *app) {
   settings->ReadSettings();
   mainContext.SetControlPanel(new ControlPanel(this));
   mainContext.SetDB(new Database());
-  mainContext.SetMap(new Map());
+  mainContext.SetMap(new Map(this));
   mainContext.SetLegend(new Legend(mainContext.GetMap()));
+  mainContext.SetDisplayPanel(new DisplayPanel(mainContext.GetMap()));
   mainWindow = new QWidget();
   QVBoxLayout *vLayout = new QVBoxLayout(mainWindow);
 
@@ -231,4 +240,36 @@ void View::UpdateMap() {
       map->SetPolygonColor(id, {255, 255, 255});
     }
   }
+}
+
+void View::CellSelected(unsigned int id)
+{
+    std::map<unsigned int, unsigned int>& cellNumToId =
+        mainContext.GetCellIdLookup();
+    bool found = false;
+    unsigned int cellNum = 0;
+    for (const std::pair<unsigned int, unsigned int>& ele : cellNumToId)
+    {
+        if (ele.second == id)
+        {
+            cellNum = ele.first;
+            found = true;
+        }
+    }
+    ControlPanel* cPanel = mainContext.GetControlPanel();
+    Database* db = mainContext.GetDB();
+    const std::string respScoreAsset =
+        cPanel->GetCurrentResponse() + "_" + cPanel->GetCurrentAsset();
+    double time = cPanel->GetCurrentTime();
+    const std::map<size_t, double>& cellSlice =
+        db->GetCellSlice(respScoreAsset, time);
+
+    double data = 0;
+    if (cellSlice.contains(cellNum))
+    {
+        data = cellSlice.at(cellNum);
+    }
+    DisplayPanel* display = mainContext.GetDisplay();
+    display->Clear();
+    display->AddDataEntry(respScoreAsset, data);
 }

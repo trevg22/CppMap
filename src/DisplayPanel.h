@@ -12,9 +12,9 @@ class DisplayPanel: public QWidget
     };
     
     QVBoxLayout *rows=nullptr;
-    std::vector<Entry> respEntries;
+    std::vector<Entry*> respEntries;
     public:
-    DisplayPanel();
+    DisplayPanel(QWidget * parent);
     void AddDataEntry(const std::string &label,double data);
     
     void Clear();

@@ -9,6 +9,7 @@
 Legend::Legend(QWidget *parent) : QWidget(parent) {
   vLayout = new QVBoxLayout();
   this->setGeometry(0, 130, 300, 300);
+  
   QGraphicsOpacityEffect op(this);
   op.setOpacity(.5);
   this->setGraphicsEffect(&op);
